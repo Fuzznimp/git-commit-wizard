@@ -192,12 +192,16 @@ func filterScopes(all []string, q string) []string {
 		return all
 	}
 	q = strings.ToLower(q)
-	var out []string
+	var prefix, contains []string
 	for _, s := range all {
-		if strings.Contains(strings.ToLower(s), q) {
-			out = append(out, s)
+		lower := strings.ToLower(s)
+		if strings.HasPrefix(lower, q) {
+			prefix = append(prefix, s)
+		} else if strings.Contains(lower, q) {
+			contains = append(contains, s)
 		}
 	}
+	out := append(prefix, contains...)
 
 	return out
 }
