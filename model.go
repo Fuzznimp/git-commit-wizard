@@ -72,6 +72,8 @@ type model struct {
 	commitScope   string
 	commitSubject string
 	commitMsg     string
+
+	stagedFiles []string
 }
 
 func newModel() model {
@@ -99,6 +101,7 @@ func newModel() model {
 		subjectInput:   sub,
 		allScopes:      scopes,
 		filteredScopes: scopes,
+		stagedFiles:    GetStagedFiles(),
 	}
 }
 
@@ -119,6 +122,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m.updateSubject(msg)
 		}
 	}
+
 	return m, nil
 }
 
@@ -127,6 +131,7 @@ func (m model) updateType(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	switch msg.String() {
 	case "ctrl+c":
 		return m, tea.Quit
+
 	case "esc":
 		if m.typeInput.Value() == "" {
 			return m, tea.Quit
@@ -135,16 +140,19 @@ func (m model) updateType(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		m.filteredTypes = commitTypes
 		m.typeIdx = 0
 		return m, nil
+
 	case "down":
 		if m.typeIdx < len(m.filteredTypes)-1 {
 			m.typeIdx++
 		}
 		return m, nil
+
 	case "up":
 		if m.typeIdx > 0 {
 			m.typeIdx--
 		}
 		return m, nil
+
 	case "enter":
 		if len(m.filteredTypes) == 0 {
 			return m, nil
@@ -161,6 +169,7 @@ func (m model) updateType(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	// filter and reset cursor
 	m.filteredTypes = filterScopes(commitTypes, m.typeInput.Value())
 	m.typeIdx = 0
+
 	return m, cmd
 }
 
@@ -176,6 +185,7 @@ func filterScopes(all []string, q string) []string {
 			out = append(out, s)
 		}
 	}
+
 	return out
 }
 
@@ -220,6 +230,7 @@ func (m model) updateScope(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 	m.scopeInput, cmd = m.scopeInput.Update(msg)
 	m.filteredScopes = filterScopes(m.allScopes, m.scopeInput.Value())
+
 	return m, cmd
 }
 
@@ -250,6 +261,7 @@ func (m model) updateSubject(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 
 	var cmd tea.Cmd
 	m.subjectInput, cmd = m.subjectInput.Update(msg)
+
 	return m, cmd
 }
 
@@ -257,9 +269,21 @@ func buildCommitMsg(ctype, scope, subject string) string {
 	if scope != "" {
 		return fmt.Sprintf("%s(%s): %s", ctype, scope, subject)
 	}
+
 	return fmt.Sprintf("%s: %s", ctype, subject)
 }
 
+func stagedFilesView(files []string) string {
+	if len(files) == 0 {
+		return ""
+	}
+	var lines []string
+	for _, f := range files {
+		lines = append(lines, dimStyle.Render("+ "+f))
+	}
+
+	return strings.Join(lines, "\n")
+}
 
 func (m model) View() string {
 	var b strings.Builder
@@ -303,8 +327,9 @@ func (m model) View() string {
 		b.WriteString(labelStyle.Render("Subject") + "\n\n")
 		b.WriteString(m.subjectInput.View() + "\n")
 		b.WriteString(previewLine(m))
-
 	}
+
+	b.WriteString(stagedFilesView(m.stagedFiles))
 
 	return borderStyle.Render(b.String()) + "\n"
 }
@@ -322,5 +347,6 @@ func previewLine(m model) string {
 	}
 
 	preview := buildCommitMsg(ctype, scope, subject)
-	return "\n" + dimStyle.Render(preview) + "\n"
+
+	return "\n" + dimStyle.Render(preview) + "\n\n"
 }

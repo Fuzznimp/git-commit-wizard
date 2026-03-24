@@ -25,6 +25,7 @@ func GetScopesFromLog() []string {
 	freq := map[string]int{}
 	for _, line := range strings.Split(string(out), "\n") {
 		line = strings.TrimSpace(line)
+
 		if m := conventionalScopeRe.FindStringSubmatch(line); m != nil {
 			freq[m[1]]++
 		}
@@ -35,10 +36,12 @@ func GetScopesFromLog() []string {
 		scope string
 		count int
 	}
+
 	pairs := make([]pair, 0, len(freq))
 	for s, c := range freq {
 		pairs = append(pairs, pair{s, c})
 	}
+
 	// Simple insertion sort — scope lists are small.
 	for i := 1; i < len(pairs); i++ {
 		for j := i; j > 0 && pairs[j].count > pairs[j-1].count; j-- {
@@ -50,6 +53,7 @@ func GetScopesFromLog() []string {
 	for i, p := range pairs {
 		scopes[i] = p.scope
 	}
+
 	return scopes
 }
 
@@ -58,7 +62,25 @@ func gitConfig(key string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
 	return strings.TrimSpace(string(out)), nil
+}
+
+// GetStagedFiles returns the list of staged files.
+func GetStagedFiles() []string {
+	out, err := exec.Command("git", "diff", "--cached", "--name-only").Output()
+	if err != nil {
+		return nil
+	}
+
+	var files []string
+	for _, f := range strings.Split(strings.TrimSpace(string(out)), "\n") {
+		if f != "" {
+			files = append(files, f)
+		}
+	}
+
+	return files
 }
 
 // StreamGitCommit runs `git commit -m msg` with output streamed directly to the terminal.
@@ -66,5 +88,6 @@ func StreamGitCommit(msg string) error {
 	cmd := exec.Command("git", "commit", "-m", msg)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
+
 	return cmd.Run()
 }
