@@ -17,6 +17,8 @@ const (
 	stepDone    = iota
 )
 
+const commitLimit = 72
+
 var commitTypes = []string{
 	"feat", "fix", "chore", "docs", "refactor",
 	"test", "style", "perf", "ci", "build", "revert",
@@ -280,6 +282,13 @@ func (m model) updateSubject(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 	m.subjectInput, cmd = m.subjectInput.Update(msg)
 
+	full := buildCommitMsg(m.commitType, m.commitScope, m.subjectInput.Value())
+	if len(full) > commitLimit {
+		m.subjectInput.TextStyle = errorStyle
+	} else {
+		m.subjectInput.TextStyle = lipgloss.NewStyle()
+	}
+
 	return m, cmd
 }
 
@@ -289,6 +298,16 @@ func buildCommitMsg(ctype, scope, subject string) string {
 	}
 
 	return fmt.Sprintf("%s: %s", ctype, subject)
+}
+
+func maxLineWidth(s string) int {
+	max := 0
+	for _, line := range strings.Split(s, "\n") {
+		if w := lipgloss.Width(line); w > max {
+			max = w
+		}
+	}
+	return max
 }
 
 func stagedFilesView(files []StagedFile) string {
@@ -352,8 +371,32 @@ func (m model) View() string {
 		b.WriteString(previewLine(m))
 
 	case stepSubject:
+		full := buildCommitMsg(m.commitType, m.commitScope, m.subjectInput.Value())
+		count := fmt.Sprintf("%d/%d", len(full), commitLimit)
+		var countStyle lipgloss.Style
+		if len(full) > commitLimit {
+			countStyle = errorStyle
+		} else {
+			countStyle = dimStyle
+		}
+
+		refWidth := lipgloss.Width(m.subjectInput.View())
+		for _, candidate := range []int{
+			lipgloss.Width(full),
+			maxLineWidth(stagedFilesView(m.stagedFiles)),
+		} {
+			if candidate > refWidth {
+				refWidth = candidate
+			}
+		}
+
 		b.WriteString(labelStyle.Render("Subject") + "\n\n")
 		b.WriteString(m.subjectInput.View() + "\n")
+		padding := refWidth - lipgloss.Width(count)
+		if padding > 0 {
+			b.WriteString(strings.Repeat(" ", padding))
+		}
+		b.WriteString(countStyle.Render(count) + "\n")
 		b.WriteString(previewLine(m))
 	}
 
