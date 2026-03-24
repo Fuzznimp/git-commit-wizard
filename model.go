@@ -343,6 +343,10 @@ func stagedFilesView(files []StagedFile) string {
 }
 
 func (m model) View() string {
+	if m.step == stepDone {
+		return borderStyle.Render(selectedStyle.Render(m.commitMsg)) + "\n"
+	}
+
 	var b strings.Builder
 
 	switch m.step {
