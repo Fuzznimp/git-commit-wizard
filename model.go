@@ -153,7 +153,7 @@ func (m model) updateType(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case "ctrl+c":
 		return m, tea.Quit
 
-	case "esc":
+	case "esc", "ctrl+h":
 		if m.typeInput.Value() == "" {
 			return m, tea.Quit
 		}
@@ -162,19 +162,19 @@ func (m model) updateType(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		m.typeIdx = 0
 		return m, nil
 
-	case "down":
+	case "down", "ctrl+j":
 		if m.typeIdx < len(m.filteredTypes)-1 {
 			m.typeIdx++
 		}
 		return m, nil
 
-	case "up":
+	case "up", "ctrl+k":
 		if m.typeIdx > 0 {
 			m.typeIdx--
 		}
 		return m, nil
 
-	case "enter":
+	case "enter", "ctrl+l":
 		if len(m.filteredTypes) == 0 {
 			return m, nil
 		}
@@ -220,7 +220,7 @@ func (m model) updateScope(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case "ctrl+c":
 		return m, tea.Quit
 
-	case "esc":
+	case "esc", "ctrl+h":
 		// Go back to type step.
 		m.scopeInput.Blur()
 		m.scopeInput.SetValue("")
@@ -228,7 +228,7 @@ func (m model) updateScope(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		m.step = stepType
 		return m, nil
 
-	case "down":
+	case "down", "ctrl+j":
 		if m.scopeIdx < len(m.filteredScopes)-1 {
 			m.scopeIdx++
 			m.scopeInput.SetValue(m.filteredScopes[m.scopeIdx])
@@ -236,7 +236,7 @@ func (m model) updateScope(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		}
 		return m, nil
 
-	case "up":
+	case "up", "ctrl+k":
 		if m.scopeIdx > 0 {
 			m.scopeIdx--
 			m.scopeInput.SetValue(m.filteredScopes[m.scopeIdx])
@@ -244,7 +244,7 @@ func (m model) updateScope(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		}
 		return m, nil
 
-	case "enter":
+	case "enter", "ctrl+l":
 		m.commitScope = strings.TrimSpace(m.scopeInput.Value())
 		m.scopeInput.Blur()
 		m.step = stepSubject
@@ -266,14 +266,14 @@ func (m model) updateSubject(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case "ctrl+c":
 		return m, tea.Quit
 
-	case "esc":
+	case "esc", "ctrl+h":
 		// Go back to scope step.
 		m.subjectInput.Blur()
 		m.step = stepScope
 		m.scopeInput.Focus()
 		return m, textinput.Blink
 
-	case "enter":
+	case "enter", "ctrl+l":
 		subject := strings.TrimSpace(m.subjectInput.Value())
 		if subject == "" {
 			return m, nil // require non-empty subject

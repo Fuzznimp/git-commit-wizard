@@ -4,9 +4,7 @@ Interactive terminal UI for writing [conventional commits](https://www.conventio
 
 ## Usage
 
-```bash
-gcm
-```
+I launch it via a custom zsh alias `gcm`, targeting the binary.
 
 ## Steps
 
@@ -20,21 +18,22 @@ Output format: `type(scope): subject`
 
 ## Features
 
-- **Fuzzy search** on commit types — prefix matches are ranked first.
 - **Scope suggestions** from your git log, sorted by frequency.
+- **Fuzzy search** on commit types — prefix matches are ranked first.
 - **Live preview** of the full commit message at every step.
 - **Character counter** right-aligned to the 72-character limit, turns red when exceeded.
 - **Staged files list** at the bottom — color-coded by status: green `+` for added, orange `~` for modified, red `-` for deleted. Shows a warning when nothing is staged.
 - **Commit message displayed** in the UI after the commit runs.
+- **Vim Motions**.
 
 ## Keybindings
 
-| Key      | Action                |
-| -------- | --------------------- |
-| `↑ / ↓`  | Navigate list         |
-| `enter`  | Confirm selection     |
-| `esc`    | Clear input / go back |
-| `ctrl+c` | Quit                  |
+| Key              | Action                |
+| ---------------- | --------------------- |
+| `↑/↓` `ctrl+k/j` | Navigate list         |
+| `enter` `ctrl+l` | Confirm / next step   |
+| `esc` `ctrl+h`   | Clear input / go back |
+| `ctrl+c`         | Quit                  |
 
 ## Build
 
