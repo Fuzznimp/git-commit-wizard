@@ -92,6 +92,7 @@ type model struct {
 func newModel() model {
 	ti := textinput.New()
 	ti.Placeholder = "search type..."
+	ti.Prompt = "󰍉 "
 	ti.CharLimit = 20
 	ti.Focus()
 
@@ -292,7 +293,7 @@ func buildCommitMsg(ctype, scope, subject string) string {
 
 func stagedFilesView(files []StagedFile) string {
 	if len(files) == 0 {
-		return ""
+		return errorStyle.Render(" no staged files ")
 	}
 	addedStyle   := lipgloss.NewStyle().Foreground(colors.green)
 	modifiedStyle := lipgloss.NewStyle().Foreground(colors.orange)
@@ -317,15 +318,15 @@ func (m model) View() string {
 
 	switch m.step {
 	case stepType:
-		b.WriteString(titleStyle.Render("git-commit-wizard") + "\n\n")
-		b.WriteString("  " + m.typeInput.View() + "\n")
+		b.WriteString(titleStyle.Render(" git-commit-wizard ") + "\n\n")
+		b.WriteString(m.typeInput.View() + "\n")
 		if len(m.filteredTypes) > 0 {
 			b.WriteString("\n")
 			for i, t := range m.filteredTypes {
 				if i == m.typeIdx {
-					b.WriteString(selectedStyle.Render("  > "+t) + "\n")
+					b.WriteString(selectedStyle.Render(" 󰹹 "+t) + "\n")
 				} else {
-					b.WriteString(dimStyle.Render("    "+t) + "\n")
+					b.WriteString(dimStyle.Render("   "+t) + "\n")
 				}
 			}
 		}

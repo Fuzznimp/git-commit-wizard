@@ -31,3 +31,4 @@ go build .
 - [Bubble Tea](https://github.com/charmbracelet/bubbletea)
 - [Bubbles](https://github.com/charmbracelet/bubbles)
 - [Lip Gloss](https://github.com/charmbracelet/lipgloss)
+- [Nerd Fonts](https://www.nerdfonts.com/)
