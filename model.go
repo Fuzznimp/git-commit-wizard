@@ -24,6 +24,8 @@ var commitTypes = []string{
 	"test", "style", "perf", "ci", "build", "revert",
 }
 
+var title = " git-commit-wizard "
+
 // Colors
 var colors = struct {
 	orange lipgloss.Color
@@ -78,6 +80,7 @@ type model struct {
 	scopeInput     textinput.Model
 	allScopes      []string
 	filteredScopes []string
+	scopeIdx       int
 
 	// stepSubject
 	subjectInput textinput.Model
@@ -93,17 +96,19 @@ type model struct {
 
 func newModel() model {
 	ti := textinput.New()
-	ti.Placeholder = "search type..."
+	ti.Placeholder = "type"
 	ti.Prompt = "󰍉 "
 	ti.CharLimit = 20
 	ti.Focus()
 
 	si := textinput.New()
-	si.Placeholder = "scope (optional, Tab to cycle suggestions)"
+	si.Placeholder = "scope - optional"
+	si.Prompt = "󰍉 "
 	si.CharLimit = 64
 
 	sub := textinput.New()
-	sub.Placeholder = "short description"
+	sub.Placeholder = "description"
+	sub.Prompt = "󰍉 "
 	sub.CharLimit = 100
 
 	scopes := GetScopesFromLog()
@@ -223,18 +228,18 @@ func (m model) updateScope(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		m.step = stepType
 		return m, nil
 
-	case "tab":
-		// Cycle through filtered suggestions.
-		if len(m.filteredScopes) > 0 {
-			cur := m.scopeInput.Value()
-			idx := 0
-			for i, s := range m.filteredScopes {
-				if s == cur {
-					idx = (i + 1) % len(m.filteredScopes)
-					break
-				}
-			}
-			m.scopeInput.SetValue(m.filteredScopes[idx])
+	case "down":
+		if m.scopeIdx < len(m.filteredScopes)-1 {
+			m.scopeIdx++
+			m.scopeInput.SetValue(m.filteredScopes[m.scopeIdx])
+			m.scopeInput.CursorEnd()
+		}
+		return m, nil
+
+	case "up":
+		if m.scopeIdx > 0 {
+			m.scopeIdx--
+			m.scopeInput.SetValue(m.filteredScopes[m.scopeIdx])
 			m.scopeInput.CursorEnd()
 		}
 		return m, nil
@@ -250,6 +255,7 @@ func (m model) updateScope(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 	m.scopeInput, cmd = m.scopeInput.Update(msg)
 	m.filteredScopes = filterScopes(m.allScopes, m.scopeInput.Value())
+	m.scopeIdx = 0
 
 	return m, cmd
 }
@@ -293,11 +299,15 @@ func (m model) updateSubject(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 }
 
 func buildCommitMsg(ctype, scope, subject string) string {
+	base := ctype
 	if scope != "" {
-		return fmt.Sprintf("%s(%s): %s", ctype, scope, subject)
+		base = fmt.Sprintf("%s(%s)", ctype, scope)
+	}
+	if subject == "" {
+		return base
 	}
 
-	return fmt.Sprintf("%s: %s", ctype, subject)
+	return fmt.Sprintf("%s: %s", base, subject)
 }
 
 func maxLineWidth(s string) int {
@@ -337,7 +347,7 @@ func (m model) View() string {
 
 	switch m.step {
 	case stepType:
-		b.WriteString(titleStyle.Render(" git-commit-wizard ") + "\n\n")
+		b.WriteString(titleStyle.Render(title) + "\n\n")
 		b.WriteString(m.typeInput.View() + "\n")
 		if len(m.filteredTypes) > 0 {
 			b.WriteString("\n")
@@ -352,25 +362,26 @@ func (m model) View() string {
 		b.WriteString(previewLine(m))
 
 	case stepScope:
-		b.WriteString(labelStyle.Render("Scope") + "\n\n")
-		b.WriteString("  " + m.scopeInput.View() + "\n")
+		b.WriteString(titleStyle.Render(title) + "\n\n")
+		b.WriteString(m.scopeInput.View() + "\n")
 		if len(m.filteredScopes) > 0 {
 			b.WriteString("\n")
 			shown := m.filteredScopes
 			if len(shown) > 5 {
 				shown = shown[:5]
 			}
-			for _, s := range shown {
-				if s == m.scopeInput.Value() {
-					b.WriteString(selectedStyle.Render("    "+s) + "\n")
+			for i, s := range shown {
+				if i == m.scopeIdx {
+					b.WriteString(selectedStyle.Render(" 󰹹 "+s) + "\n")
 				} else {
-					b.WriteString(dimStyle.Render("    "+s) + "\n")
+					b.WriteString(dimStyle.Render("   "+s) + "\n")
 				}
 			}
 		}
 		b.WriteString(previewLine(m))
 
 	case stepSubject:
+		b.WriteString(titleStyle.Render(title) + "\n\n")
 		full := buildCommitMsg(m.commitType, m.commitScope, m.subjectInput.Value())
 		count := fmt.Sprintf("%d/%d", len(full), commitLimit)
 		var countStyle lipgloss.Style
@@ -384,13 +395,13 @@ func (m model) View() string {
 		for _, candidate := range []int{
 			lipgloss.Width(full),
 			maxLineWidth(stagedFilesView(m.stagedFiles)),
+			lipgloss.Width(titleStyle.Render(title)),
 		} {
 			if candidate > refWidth {
 				refWidth = candidate
 			}
 		}
 
-		b.WriteString(labelStyle.Render("Subject") + "\n\n")
 		b.WriteString(m.subjectInput.View() + "\n")
 		padding := refWidth - lipgloss.Width(count)
 		if padding > 0 {
