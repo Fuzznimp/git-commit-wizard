@@ -22,32 +22,45 @@ var commitTypes = []string{
 	"test", "style", "perf", "ci", "build", "revert",
 }
 
+// Colors
+var colors = struct {
+	orange lipgloss.Color
+	green  lipgloss.Color
+	red    lipgloss.Color
+	dim    lipgloss.Color
+}{
+	orange: "#e78a4e",
+	green:  "#a9b665",
+	red:    "#ea6962",
+	dim:    "#665c54",
+}
+
 // Styles
 var (
 	selectedStyle = lipgloss.NewStyle().
-			Foreground(lipgloss.Color("#e78a4e")).
+			Foreground(colors.orange).
 			Bold(true)
 
 	dimStyle = lipgloss.NewStyle().
-			Foreground(lipgloss.Color("#665c54"))
+			Foreground(colors.dim)
 
 	labelStyle = lipgloss.NewStyle().
-			Foreground(lipgloss.Color("#e78a4e")).
+			Foreground(colors.orange).
 			Bold(true)
 
 	titleStyle = lipgloss.NewStyle().
-			Foreground(lipgloss.Color("#a9b665")).
+			Foreground(colors.green).
 			Bold(true)
 
 	successStyle = lipgloss.NewStyle().
-			Foreground(lipgloss.Color("#a9b665"))
+			Foreground(colors.green)
 
 	errorStyle = lipgloss.NewStyle().
-			Foreground(lipgloss.Color("#ea6962"))
+			Foreground(colors.red)
 
 	borderStyle = lipgloss.NewStyle().
 			Border(lipgloss.RoundedBorder()).
-			BorderForeground(lipgloss.Color("#665c54")).
+			BorderForeground(colors.dim).
 			Padding(0, 1)
 )
 
@@ -277,8 +290,9 @@ func stagedFilesView(files []StagedFile) string {
 	if len(files) == 0 {
 		return ""
 	}
-	addedStyle   := lipgloss.NewStyle().Foreground(lipgloss.Color("#a9b665"))
-	deletedStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("#ea6962"))
+	addedStyle   := lipgloss.NewStyle().Foreground(colors.green)
+	modifiedStyle := lipgloss.NewStyle().Foreground(colors.orange)
+	deletedStyle := lipgloss.NewStyle().Foreground(colors.red)
 	var lines []string
 	for _, f := range files {
 		switch f.Status {
@@ -287,7 +301,7 @@ func stagedFilesView(files []StagedFile) string {
 		case "D":
 			lines = append(lines, deletedStyle.Render("- "+f.Path))
 		default:
-			lines = append(lines, lipgloss.NewStyle().Foreground(lipgloss.Color("#e78a4e")).Render("~ "+f.Path))
+			lines = append(lines, modifiedStyle.Render("~ "+f.Path))
 		}
 	}
 
