@@ -278,8 +278,6 @@ func (m model) View() string {
 				}
 			}
 		}
-		b.WriteString("\n")
-		b.WriteString(dimStyle.Render("↑/↓ move | enter select | esc clear/quit") + "\n")
 		b.WriteString(previewLine(m))
 
 	case stepScope:
@@ -299,14 +297,11 @@ func (m model) View() string {
 				}
 			}
 		}
-		b.WriteString("\n")
-		b.WriteString(dimStyle.Render("tab cycle  enter confirm  esc back") + "\n")
 		b.WriteString(previewLine(m))
 
 	case stepSubject:
 		b.WriteString(labelStyle.Render("Subject") + "\n\n")
-		b.WriteString("  " + m.subjectInput.View() + "\n\n")
-		b.WriteString(dimStyle.Render("enter confirm  esc back") + "\n")
+		b.WriteString(m.subjectInput.View() + "\n")
 		b.WriteString(previewLine(m))
 
 	}
@@ -327,5 +322,5 @@ func previewLine(m model) string {
 	}
 
 	preview := buildCommitMsg(ctype, scope, subject)
-	return "\n" + dimStyle.Render("  preview: "+preview) + "\n"
+	return "\n" + dimStyle.Render(preview) + "\n"
 }
