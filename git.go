@@ -66,17 +66,27 @@ func gitConfig(key string) (string, error) {
 	return strings.TrimSpace(string(out)), nil
 }
 
-// GetStagedFiles returns the list of staged files.
-func GetStagedFiles() []string {
-	out, err := exec.Command("git", "diff", "--cached", "--name-only").Output()
+// StagedFile holds a staged file's status and path.
+type StagedFile struct {
+	Status string
+	Path   string
+}
+
+// GetStagedFiles returns the list of staged files with their status (A/M/D).
+func GetStagedFiles() []StagedFile {
+	out, err := exec.Command("git", "diff", "--cached", "--name-status").Output()
 	if err != nil {
 		return nil
 	}
 
-	var files []string
-	for _, f := range strings.Split(strings.TrimSpace(string(out)), "\n") {
-		if f != "" {
-			files = append(files, f)
+	var files []StagedFile
+	for _, line := range strings.Split(strings.TrimSpace(string(out)), "\n") {
+		if line == "" {
+			continue
+		}
+		parts := strings.SplitN(line, "\t", 2)
+		if len(parts) == 2 {
+			files = append(files, StagedFile{Status: parts[0], Path: parts[1]})
 		}
 	}
 

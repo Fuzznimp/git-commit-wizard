@@ -73,7 +73,7 @@ type model struct {
 	commitSubject string
 	commitMsg     string
 
-	stagedFiles []string
+	stagedFiles []StagedFile
 }
 
 func newModel() model {
@@ -273,13 +273,22 @@ func buildCommitMsg(ctype, scope, subject string) string {
 	return fmt.Sprintf("%s: %s", ctype, subject)
 }
 
-func stagedFilesView(files []string) string {
+func stagedFilesView(files []StagedFile) string {
 	if len(files) == 0 {
 		return ""
 	}
+	addedStyle   := lipgloss.NewStyle().Foreground(lipgloss.Color("#a9b665"))
+	deletedStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("#ea6962"))
 	var lines []string
 	for _, f := range files {
-		lines = append(lines, dimStyle.Render("+ "+f))
+		switch f.Status {
+		case "A":
+			lines = append(lines, addedStyle.Render("+ "+f.Path))
+		case "D":
+			lines = append(lines, deletedStyle.Render("- "+f.Path))
+		default:
+			lines = append(lines, lipgloss.NewStyle().Foreground(lipgloss.Color("#e78a4e")).Render("~ "+f.Path))
+		}
 	}
 
 	return strings.Join(lines, "\n")
