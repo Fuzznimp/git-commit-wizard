@@ -93,9 +93,26 @@ func GetStagedFiles() []StagedFile {
 	return files
 }
 
-// StreamGitCommit runs `git commit -m msg` with output streamed directly to the terminal.
-func StreamGitCommit(msg string) error {
-	cmd := exec.Command("git", "commit", "-m", msg)
+// StreamGitCommit runs `git commit` with output streamed directly to the terminal.
+func StreamGitCommit(msg string, noVerify, amend, noEdit, allowEmpty bool) error {
+	args := []string{"commit"}
+	if msg != "" {
+		args = append(args, "-m", msg)
+	}
+	if noVerify {
+		args = append(args, "--no-verify")
+	}
+	if amend {
+		args = append(args, "--amend")
+	}
+	if noEdit {
+		args = append(args, "--no-edit")
+	}
+	if allowEmpty {
+		args = append(args, "--allow-empty")
+	}
+
+	cmd := exec.Command("git", args...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 

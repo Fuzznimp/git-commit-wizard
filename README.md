@@ -16,6 +16,16 @@ On the last step, pressing `enter` runs the commit immediately with output strea
 
 Output format: `type(scope): subject`
 
+## Flags
+
+| Flag            | Short | Description                                              |
+| --------------- | ----- | -------------------------------------------------------- |
+| `--no-verify`   | `-nv` | Skip pre-commit and commit-msg hooks                     |
+| `--dry-run`     | `-dr` | Print the commit message without committing              |
+| `--amend`       | `-am` | Amend the last commit with a new message from the wizard |
+| `--no-edit`     | `-ne` | Skip the wizard and commit as-is (useful with `--amend`) |
+| `--allow-empty` | `-ae` | Allow committing with no staged changes                  |
+
 ## Features
 
 - **Scope suggestions** from your git log, sorted by frequency.
