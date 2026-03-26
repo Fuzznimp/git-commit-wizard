@@ -245,7 +245,11 @@ func (m model) updateScope(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return m, nil
 
 	case "enter", "ctrl+l":
-		m.commitScope = strings.TrimSpace(m.scopeInput.Value())
+		val := strings.TrimSpace(m.scopeInput.Value())
+		if val == "" && len(m.filteredScopes) > 0 {
+			val = m.filteredScopes[m.scopeIdx]
+		}
+		m.commitScope = val
 		m.scopeInput.Blur()
 		m.step = stepSubject
 		m.subjectInput.Focus()
