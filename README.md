@@ -9,7 +9,7 @@ I launch it via a custom zsh alias `gcm`, targeting the binary.
 ## Steps
 
 1. **Type** — search and select a commit type. Fuzzy search filters the list with prefix-first priority.
-2. **Scope** — optional scope, with suggestions from your git log history. Navigate suggestions with `↑ / ↓`.
+2. **Scope** — optional scope, with suggestions from your git log history. Navigate suggestions with `↑ / ↓`. Type a space and press `enter` to skip the scope without selecting a suggestion.
 3. **Subject** — commit message subject. A character counter tracks the total commit message length against the 72-character limit.
 
 On the last step, pressing `enter` runs the commit immediately with output streamed live to the terminal.
